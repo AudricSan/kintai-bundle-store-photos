@@ -30,7 +30,7 @@ echo Flash::fromQuery('success', [
         <form method="GET" action="" class="form-flex">
             <div class="form-group">
                 <label class="form-label"><?= __('store') ?></label>
-                <select name="store_id" class="form-control form-control-sm" onchange="this.form.submit()">
+                <select name="store_id" class="form-control form-control-sm" data-submit-on-change>
                     <option value="0"><?= __('all') ?></option>
                     <?php foreach ($availableStores as $s): ?>
                         <option value="<?= (int) $s['id'] ?>" <?= $filterStoreId === (int) $s['id'] ? 'selected' : '' ?>>
@@ -41,7 +41,7 @@ echo Flash::fromQuery('success', [
             </div>
             <div class="form-group">
                 <label class="form-label"><?= __('photo_filter_day') ?></label>
-                <select name="date" class="form-control form-control-sm" onchange="this.form.submit()">
+                <select name="date" class="form-control form-control-sm" data-submit-on-change>
                     <option value=""><?= __('photo_filter_all_days') ?></option>
                     <?php foreach ($availableDates as $day => $dayCount): ?>
                         <option value="<?= htmlspecialchars($day) ?>" <?= $filterDate === $day ? 'selected' : '' ?>>
