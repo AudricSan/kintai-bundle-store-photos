@@ -11,6 +11,9 @@ $sid       = (int) $submission['id'];
 $isOwner   = !empty($auth_user['is_admin']);
 $backUrl   = back_url($BASE_URL . '/admin/photos' . ($backStoreId > 0 ? '?store_id=' . $backStoreId : ''));
 ?>
+<?php if ($storePhotosCss = bundle_asset('store-photos', 'css/photos.css')): ?>
+<link rel="stylesheet" href="<?= $storePhotosCss ?>">
+<?php endif; ?>
 <div class="page-header">
     <h2 class="page-header__title">
         <?= htmlspecialchars($storeName) ?> — <?= htmlspecialchars($submission['week_label'] ?? '') ?>
@@ -94,5 +97,7 @@ $backUrl   = back_url($BASE_URL . '/admin/photos' . ($backStoreId > 0 ? '?store_
             'filename' => $img['filename'],
         ];
     }, array_values($images)), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?></script>
-    <script src="<?= $BASE_URL ?>/assets/js/modules/photo-carousel.js"></script>
+    <?php if ($photoCarouselJs = bundle_asset('store-photos', 'js/photo-carousel.js')): ?>
+    <script src="<?= $photoCarouselJs ?>"></script>
+    <?php endif; ?>
 <?php endif; ?>

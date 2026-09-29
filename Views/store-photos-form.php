@@ -6,6 +6,9 @@
 
 $thisWeek = date('Y-m-d', strtotime('tuesday this week'));
 ?>
+<?php if ($storePhotosCss = bundle_asset('store-photos', 'css/photos.css')): ?>
+<link rel="stylesheet" href="<?= $storePhotosCss ?>">
+<?php endif; ?>
 <div class="page-header">
     <h2 class="page-header__title"><?= __('photo_new_submission') ?></h2>
     <div class="page-header__actions">
