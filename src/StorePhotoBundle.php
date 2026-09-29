@@ -43,5 +43,6 @@ final class StorePhotoBundle extends Bundle
     {
         $this->loadViewsFrom($this->getPath() . '/Views', 'store-photos');
         $this->loadRoutesFrom($this->getPath() . '/routes.php');
+        $this->loadAssetsFrom('public');
     }
 }

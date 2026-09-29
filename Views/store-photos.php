@@ -9,6 +9,9 @@ use kintai\UI\Components\Flash;
 /** @var array  $availableDates */
 /** @var string $filterDate */
 /** @var string $BASE_URL */
+if ($storePhotosCss = bundle_asset('store-photos', 'css/photos.css')): ?>
+<link rel="stylesheet" href="<?= $storePhotosCss ?>">
+<?php endif;
 
 echo Flash::fromQuery('success', [
     'created' => __('photo_created'),
