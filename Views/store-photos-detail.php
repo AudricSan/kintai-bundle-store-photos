@@ -47,7 +47,7 @@ $backUrl   = back_url($BASE_URL . '/admin/photos' . ($backStoreId > 0 ? '?store_
     <div class="photo-detail-grid">
         <?php foreach (array_values($images) as $i => $img): ?>
             <div class="card photo-detail-card">
-                <button type="button" class="photo-detail-card__trigger" onclick="photoCarouselOpen(<?= (int) $i ?>)">
+                <button type="button" class="photo-detail-card__trigger" data-on-click="photoCarouselOpen" data-args="[<?= (int) $i ?>]">
                     <img src="<?= $BASE_URL ?>/<?= htmlspecialchars($img['filepath']) ?>?v=<?= htmlspecialchars($img['version'] ?? '') ?>"
                          alt="<?= htmlspecialchars($img['filename']) ?>"
                          loading="lazy"
@@ -78,17 +78,17 @@ $backUrl   = back_url($BASE_URL . '/admin/photos' . ($backStoreId > 0 ? '?store_
     </div>
 
     <!-- ── Carousel photo (visionneuse plein écran) ─────────────────────── -->
-    <div id="photo-carousel-overlay" class="modal photo-carousel" onclick="photoCarouselClose(event)">
-        <button type="button" class="photo-carousel__close" onclick="photoCarouselClose(event)">&times;</button>
-        <button type="button" class="photo-carousel__nav photo-carousel__nav--prev" onclick="photoCarouselPrev(event)">&lsaquo;</button>
-        <div class="photo-carousel__stage" onclick="event.stopPropagation()">
+    <div id="photo-carousel-overlay" class="modal photo-carousel" data-on-click="photoCarouselClose">
+        <button type="button" class="photo-carousel__close" data-on-click="photoCarouselClose">&times;</button>
+        <button type="button" class="photo-carousel__nav photo-carousel__nav--prev" data-on-click="photoCarouselPrev" data-stop-propagation>&lsaquo;</button>
+        <div class="photo-carousel__stage" data-stop-propagation>
             <img id="photo-carousel-img" class="photo-carousel__img" src="" alt="">
             <div class="photo-carousel__caption">
                 <span id="photo-carousel-filename"></span>
                 <span id="photo-carousel-counter" class="photo-carousel__counter"></span>
             </div>
         </div>
-        <button type="button" class="photo-carousel__nav photo-carousel__nav--next" onclick="photoCarouselNext(event)">&rsaquo;</button>
+        <button type="button" class="photo-carousel__nav photo-carousel__nav--next" data-on-click="photoCarouselNext" data-stop-propagation>&rsaquo;</button>
     </div>
 
     <script type="application/json" id="photo-carousel-data"><?= json_encode(array_map(static function ($img) use ($BASE_URL) {

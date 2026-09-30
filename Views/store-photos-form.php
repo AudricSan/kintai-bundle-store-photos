@@ -60,7 +60,7 @@ $thisWeek = date('Y-m-d', strtotime('tuesday this week'));
     <a href="<?= back_url($BASE_URL . '/admin/photos') ?>" class="btn btn--ghost"><?= __('cancel') ?></a>
 </div>
 
-<script>
+<script nonce="<?= function_exists('csp_nonce') ? csp_nonce() : '' ?>">
 var selectedFiles = [];
 var input = document.getElementById('photoInput');
 var preview = document.getElementById('photoPreview');
