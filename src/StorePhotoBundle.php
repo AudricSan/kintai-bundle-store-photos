@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace kintai\Bundles\Installed\StorePhoto;
 
-use kintai\Core\BundleContract\Bundle;
+use kintai\Contract\Bundle;
 
 /**
  * Contrairement à sa version legacy, ce bundle n'enregistre plus son propre
@@ -13,7 +13,7 @@ use kintai\Core\BundleContract\Bundle;
  * consolidate-daily-photo-reports.php en dépendent directement — ils doivent
  * continuer de fonctionner même si ce bundle est désactivé ou désinstallé.
  * StorePhotoConsolidationService, utilisé par ces deux consommateurs Core,
- * vit désormais dans kintai\Core\Services pour la même raison. Désactiver
+ * vit désormais dans les services du Core pour la même raison. Désactiver
  * "store-photos" retire uniquement l'UI d'envoi/consultation des photos, pas
  * les données elles-mêmes ni le rattrapage de consolidation.
  */
@@ -26,7 +26,7 @@ final class StorePhotoBundle extends Bundle
 
     public function getVersion(): string
     {
-        return '1.1.0';
+        return '1.2.0';
     }
 
     public function getLabel(): string

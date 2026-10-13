@@ -1,5 +1,5 @@
 <?php
-use kintai\UI\Components\Flash;
+use kintai\Contract\View\Components\Flash;
 
 /** @var string $retentionDays */
 /** @var string $cleanupDelay */

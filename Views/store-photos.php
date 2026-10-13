@@ -1,5 +1,5 @@
 <?php
-use kintai\UI\Components\Flash;
+use kintai\Contract\View\Components\Flash;
 
 /** @var array  $submissions */
 /** @var array  $submissionImages */
