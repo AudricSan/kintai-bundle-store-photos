@@ -4,90 +4,91 @@ declare(strict_types=1);
 
 namespace kintai\Tests\Bundles\StorePhoto;
 
-use kintai\Contract\Extension\Action;
+use kintai\Bundles\Installed\StorePhoto\Cron\PhotoRetentionJob;
 use kintai\Contract\Extension\NavItem;
-use kintai\Core\Auth\PermissionCatalog;
-use kintai\Core\Container;
-use kintai\Core\Extension\Actions;
-use kintai\Core\Extension\Legacy\LegacyPendingRequests;
-use kintai\Core\Extension\Navigation;
-use kintai\Core\Extension\StoreFeatures;
+use kintai\Contract\Extension\StoreFeature;
 use kintai\Bundles\Installed\StorePhoto\StorePhotoBundle;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Les déclarations du bundle (contrat 1.11) reproduisent exactement ce que le Core affichait pour lui en repli : les
- * déclarer ne change rien à l'écran. Quand le repli du Core disparaîtra (étape 5 du plan du contrat), ce test pourra
- * être retiré.
+ * Ce que le bundle déclare au Core. Le Core n'a plus de repli pour store-photos (étape 4 du plan du contrat,
+ * extraction) : ces déclarations sont la seule source de son entrée de menu, de sa catégorie de permissions, de sa
+ * fonctionnalité par magasin, de sa tâche planifiée et de son type de notification, d'où des valeurs vérifiées une à
+ * une.
  */
 final class ContractDeclarationsTest extends TestCase
 {
-    private const SLUG = 'store-photos';
-
     private function bundle(): StorePhotoBundle
     {
         return (new \ReflectionClass(StorePhotoBundle::class))->newInstanceWithoutConstructor();
     }
 
-    /** @param list<NavItem> $items */
-    private static function navShape(array $items): array
+    public function testNavigation(): void
     {
-        return array_map(static function (NavItem $i): array {
-            $v = get_object_vars($i);
-            $v['links'] = $v['links'] !== null;
-            return $v;
-        }, $items);
+        $items = $this->bundle()->navigation();
+
+        $this->assertCount(1, $items);
+        $this->assertInstanceOf(NavItem::class, $items[0]);
+        $this->assertSame('photos', $items[0]->key);
+        $this->assertSame(NavItem::REPORTS, $items[0]->section);
+        $this->assertSame('photos', $items[0]->label);
+        $this->assertSame('admin.photos.index', $items[0]->managerRoute);
+        $this->assertSame('admin.photos.index', $items[0]->employeeRoute);
+        $this->assertSame('camera', $items[0]->icon);
+        $this->assertSame(['/admin/photos'], $items[0]->activePaths);
+        $this->assertSame('photos', $items[0]->storeFeature);
+        $this->assertSame(60, $items[0]->order);
+        $this->assertFalse($items[0]->mobile);
     }
 
-    /** @param list<Action> $actions */
-    private static function actionShape(array $actions): array
+    public function testPermissions(): void
     {
-        $context = ['user_id' => 3, 'store_id' => 5, 'store_name' => 'S', 'period' => 30];
-        return array_map(static function (Action $a) use ($context): array {
-            $v = get_object_vars($a);
-            try {
-                $v['url'] = ($a->url)($context);
-            } catch (\Throwable $e) {
-                $v['url'] = $e::class;
+        $this->assertSame(['photos' => ['view', 'create', 'update', 'delete']], $this->bundle()->permissions());
+    }
+
+    public function testStoreFeature(): void
+    {
+        $features = $this->bundle()->storeFeatures();
+
+        $this->assertCount(1, $features);
+        $this->assertInstanceOf(StoreFeature::class, $features[0]);
+        $this->assertSame('photos', $features[0]->key);
+        $this->assertSame('feature_photos', $features[0]->label);
+        $this->assertSame('feature_photos_desc', $features[0]->description);
+        $this->assertSame('📷', $features[0]->icon);
+        $this->assertSame(80, $features[0]->order);
+    }
+
+    public function testCronJobAndNotificationType(): void
+    {
+        $this->assertSame([PhotoRetentionJob::class], $this->bundle()->cronJobs());
+        $this->assertSame(['photo_archived' => '📦'], $this->bundle()->notificationTypes());
+    }
+
+    /** Le bundle n'apporte rien d'autre au Core. */
+    public function testNoOtherContribution(): void
+    {
+        $bundle = $this->bundle();
+
+        $this->assertSame([], $bundle->dashboardWidgets());
+        $this->assertSame([], $bundle->viewVariables());
+        $this->assertSame([], $bundle->actions());
+        $this->assertSame([], $bundle->profileSections());
+        $this->assertSame([], $bundle->pendingRequestsProviders());
+        $this->assertSame([], $bundle->absenceProviders());
+        $this->assertSame([], $bundle->attendanceProviders());
+    }
+
+    /** Les libellés des déclarations sont traduits par le bundle (le Core ne les fournit plus). */
+    public function testDeclaredLabelsAreTranslatedByTheBundle(): void
+    {
+        $keys = ['photos', 'perm_category_photos', 'feature_photos', 'feature_photos_desc', 'notif_photo_archived',
+            'notif_photo_archived_body', 'error_owner_only_delete_photos', 'error_photos_feature_disabled'];
+        foreach (['fr', 'en', 'ja'] as $locale) {
+            $lang = json_decode((string) file_get_contents(dirname(__DIR__) . "/lang/{$locale}.json"), true);
+            foreach ($keys as $key) {
+                $this->assertNotEmpty($lang[$key] ?? null, "{$locale} : {$key}");
             }
-            return $v;
-        }, $actions);
-    }
-
-    public function testNavigationMatchesTheCoreFallback(): void
-    {
-        $this->assertEquals(self::navShape(Navigation::legacyBundleItems()[self::SLUG] ?? []), self::navShape($this->bundle()->navigation()));
-    }
-
-    public function testPermissionsMatchTheCoreFallback(): void
-    {
-        $expected = array_intersect_key(PermissionCatalog::CATEGORIES, array_flip(array_keys(PermissionCatalog::CATEGORY_BUNDLES, self::SLUG, true)));
-        $this->assertSame($expected, $this->bundle()->permissions());
-    }
-
-    public function testStoreFeaturesMatchTheCoreFallback(): void
-    {
-        $this->assertEquals(StoreFeatures::legacyBundleFeatures()[self::SLUG] ?? [], $this->bundle()->storeFeatures());
-    }
-
-    public function testActionsMatchTheCoreFallback(): void
-    {
-        $_SERVER['SCRIPT_NAME'] = '/index.php';
-        $this->assertEquals(self::actionShape(Actions::legacyBundleActions()[self::SLUG] ?? []), self::actionShape($this->bundle()->actions()));
-    }
-
-    public function testPendingRequestsProvidersMatchTheCoreFallback(): void
-    {
-        $legacy = LegacyPendingRequests::forBundles(Container::getInstance())[self::SLUG] ?? null;
-        $declared = $this->bundle()->pendingRequestsProviders();
-
-        if ($legacy === null) {
-            $this->assertSame([], $declared);
-            return;
-        }
-        $this->assertCount(1, $declared);
-        foreach (['key', 'label', 'emptyLabel', 'permission', 'storeFeature', 'order'] as $method) {
-            $this->assertSame($legacy->{$method}(), $declared[0]->{$method}(), $method);
         }
     }
 }

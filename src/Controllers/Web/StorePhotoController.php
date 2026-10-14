@@ -7,7 +7,7 @@ namespace kintai\Bundles\Installed\StorePhoto\Controllers\Web;
 use kintai\Contract\Http\Concerns\HasAdminAccess;
 use kintai\Contract\Services\ImageCompressionService;
 use kintai\Contract\Exceptions\ForbiddenException;
-use kintai\Core\Repositories\StorePhotoRepositoryInterface;
+use kintai\Bundles\Installed\StorePhoto\Repositories\StorePhotoRepositoryInterface;
 use kintai\Contract\Data\StoreRepositoryInterface;
 use kintai\Contract\Data\AppSettingsRepositoryInterface;
 use kintai\Contract\Http\Request;
