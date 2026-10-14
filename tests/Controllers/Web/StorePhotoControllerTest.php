@@ -8,7 +8,7 @@ namespace kintai\Tests\Bundles\StorePhoto\Controllers\Web;
 use kintai\Bundles\Installed\StorePhoto\Controllers\Web\StorePhotoController;
 use kintai\Core\Exceptions\ForbiddenException;
 use kintai\Core\Repositories\AppSettingsRepositoryInterface;
-use kintai\Core\Repositories\StorePhotoRepositoryInterface;
+use kintai\Bundles\Installed\StorePhoto\Repositories\StorePhotoRepositoryInterface;
 use kintai\Core\Repositories\StoreRepositoryInterface;
 use kintai\Core\Request;
 use kintai\Core\Response;
