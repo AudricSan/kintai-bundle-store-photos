@@ -1,10 +1,17 @@
 {
     "slug": "store-photos",
     "name": "Photos de magasin",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Envoi et consultation de photos par magasin (état des lieux, rapport visuel), avec rotation et nettoyage automatique.",
-    "author": { "name": "AudricSan", "url": "https://github.com/AudricSan" },
-    "kintai_core": { "min": "0.3.0", "max": "999.999.999" },
+    "author": {
+        "name": "AudricSan",
+        "url": "https://github.com/AudricSan"
+    },
+    "kintai_contract": "^1.0",
+    "kintai_core": {
+        "min": "0.3.6",
+        "max": "999.999.999"
+    },
     "requires_bundles": {},
     "namespace": "kintai\\Bundles\\Installed\\StorePhoto",
     "entry_class": "kintai\\Bundles\\Installed\\StorePhoto\\StorePhotoBundle",
