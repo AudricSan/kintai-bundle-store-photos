@@ -1,4 +1,5 @@
 {
+    "cron_job_photo_retention": "Nettoyage des anciennes photos de magasin",
     "bundle_store_photos": "Photos de magasin",
     "bundle_store_photos_desc": "Envoi et suivi de photos hebdomadaires de l'espace de vente.",
     "error_owner_only_delete_photos": "Seul le propriétaire peut supprimer un envoi de photos.",

@@ -1,4 +1,5 @@
 {
+    "cron_job_photo_retention": "古い店舗写真の削除",
     "bundle_store_photos": "店舗写真",
     "bundle_store_photos_desc": "売場の週次写真の提出と管理。",
     "error_owner_only_delete_photos": "オーナーのみが写真投稿を削除できます。",
