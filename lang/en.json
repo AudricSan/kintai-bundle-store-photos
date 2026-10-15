@@ -1,4 +1,5 @@
 {
+    "cron_job_photo_retention": "Old store photo cleanup",
     "bundle_store_photos": "Store Photos",
     "bundle_store_photos_desc": "Weekly sales-floor photo submissions and tracking.",
     "error_owner_only_delete_photos": "Only the owner can delete a photo submission.",
