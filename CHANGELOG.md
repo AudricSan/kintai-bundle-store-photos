@@ -8,6 +8,21 @@ Le schéma de version (X.Y.Z, canaux alpha/beta/main) est décrit dans
 
 ## [Unreleased]
 
+### Fixed
+
+- Description de `bundle.json` alignée sur celle de `lang/fr.json`, pour que le catalogue et la page Bundles affichent le même texte.
+
+### Changed
+
+- Extraction du Core (étape 4 du plan du contrat) : le bundle possède désormais tout son code et ses données. Les modèles `StorePhotoSubmission` / `StorePhotoImage` et le dépôt `StorePhotoRepositoryInterface` / `DatabaseStorePhotoRepository` (`src/Models`, `src/Repositories`) quittent le Core ; les tables `store_photo_submissions` / `store_photo_images` gardent leur nom et leurs données, et une migration du bundle les crée si elles manquent (installation neuve). La rétention des photos, jusqu'ici un script CLI du Core (`scripts/photo-retention.php`), devient la tâche planifiée `photo-retention` du bundle (`cronJobs()`, à lancer via `/cron/run/photo-retention` avec un jeton cron) : archivage des envois plus vieux que la durée de conservation, puis suppression définitive après le délai de nettoyage ; le dossier vide du magasin est maintenant supprimé lui aussi. L'avertissement « photos archivées », un e-mail qui ne partait plus depuis la suppression de `users.is_admin`, devient une notification aux Owners (type `photo_archived`, une fois par envoi). Les libellés de l'entrée de menu, de la fonctionnalité, de la catégorie de permissions et deux messages d'erreur passent dans `lang/`. `ContractUsageTest` n'admet plus aucune classe du Core hors contrat ; `ContractDeclarationsTest` vérifie chaque déclaration valeur par valeur. Nouveaux tests `PhotoRetentionServiceTest`, `StorePhotosMigrationTest` et `StorePhotoTodaySubmissionTest` (repris du Core avec le dépôt).
+- Contrat de bundle versionné : le bundle n'utilise plus que les noms du contrat `kintai\Contract\…` du Core (requête, réponse, routes, middlewares, exceptions, droits, données du Core, services, vues et composants) et déclare `"kintai_contract": "^1.0"` dans `bundle.json` (`kintai_core.min` relevé à `0.3.6`, première version du Core qui fournit le contrat). Nouveau test `ContractUsageTest` : toute utilisation du Core hors contrat échoue, hormis 1 classe(s) propre(s) au bundle qui vivent encore dans le Core (extraction prévue).
+
+### Added
+
+- Libellé de la tâche planifiée `photo-retention` (`cron_job_photo_retention`, fr/en/ja), affiché par `php scripts/cron.php` depuis le contrat 1.20 (convention de traduction ; sans la clé, le nom de la tâche s'affiche, aucune contrainte de version à relever).
+- Contrat de bundle 1.11 : le bundle déclare lui-même ce qu'il apporte au Core (`navigation()`, `permissions()`, `storeFeatures()`) au lieu que le Core le connaisse à l'avance ; déclarations identiques à ce que le Core affichait pour ce bundle, rien ne change à l'écran. `bundle.json` demande désormais `"kintai_contract": "^1.11"` (Kintai Core avec les points d'extension et fournisseurs du contrat). Nouveau test `ContractDeclarationsTest` : chaque déclaration est comparée au repli historique du Core.
+- Socle de tests PHPUnit (composer.json, phpunit.xml) et CI qui l'exécute contre le vrai Core : les tests que le Core faisait tourner sur une copie figée du bundle (fixtures 1.0.0) vivent désormais ici et testent le code réel.
+
 ### Changed
 
 - Compatibilité avec la Content-Security-Policy stricte de Kintai (`script-src 'self' 'nonce-…'`, sans `'unsafe-inline'`) : les 8 attributs d'événements inline des vues (`onclick=`/`onchange=`/`onsubmit=`/`oninput=`) sont remplacés par des attributs `data-*` (`data-on-click`, `data-submit-on-change`, `data-confirm`… gérés par `csp-actions.js` du Core) et le `<script>` inline porte désormais le nonce de la requête (`csp_nonce()`, gardé par `function_exists` pour ne pas planter sur un Core plus ancien). Sans ce changement, les boutons, sélecteurs et confirmations de ces vues ne font plus rien sous la nouvelle politique, sans aucune erreur visible. **Nécessite Kintai Core 0.3.0 ou plus** (`kintai_core.min`), version qui introduit `csp-actions.js` et la CSP à nonce. `tests.yml` échoue désormais si un handler inline, un lien `javascript:` ou un `<script>` sans nonce réapparaît dans `Views/` ou `src/`.

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace kintai\Bundles\Installed\StorePhoto\Controllers\Web;
 
-use kintai\UI\Controller\Web\HasAdminAccess;
-use kintai\Core\Services\ImageCompressionService;
-use kintai\Core\Exceptions\ForbiddenException;
-use kintai\Core\Repositories\StorePhotoRepositoryInterface;
-use kintai\Core\Repositories\StoreRepositoryInterface;
-use kintai\Core\Repositories\AppSettingsRepositoryInterface;
-use kintai\Core\Request;
-use kintai\Core\Response;
-use kintai\Core\Services\AuditLogger;
-use kintai\UI\ViewRenderer;
+use kintai\Contract\Http\Concerns\HasAdminAccess;
+use kintai\Contract\Services\ImageCompressionService;
+use kintai\Contract\Exceptions\ForbiddenException;
+use kintai\Bundles\Installed\StorePhoto\Repositories\StorePhotoRepositoryInterface;
+use kintai\Contract\Data\StoreRepositoryInterface;
+use kintai\Contract\Data\AppSettingsRepositoryInterface;
+use kintai\Contract\Http\Request;
+use kintai\Contract\Http\Response;
+use kintai\Contract\Services\AuditLogger;
+use kintai\Contract\View\ViewRenderer;
 
 final class StorePhotoController
 {
