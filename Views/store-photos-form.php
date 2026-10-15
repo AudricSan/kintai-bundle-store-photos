@@ -181,7 +181,7 @@ uploadBtn.addEventListener('click', function() {
         var row = document.createElement('div');
         row.className = 'photo-upload-row';
         row.innerHTML = '<span class="text-sm">' + htmlEscape(file.name) + '</span>' +
-            '<div class="progress-bar"><div class="progress-bar__fill" id="pbar_' + idx + '" style="width:0%"></div></div>' +
+            '<div class="progress-bar"><div class="progress-bar__fill" id="pbar_' + idx + '"></div></div>' +
             '<span class="text-xs" id="ptxt_' + idx + '">0%</span>';
         progressList.appendChild(row);
 

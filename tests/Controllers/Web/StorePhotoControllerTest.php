@@ -16,14 +16,15 @@ use kintai\Core\Services\AuditLogger;
 use kintai\Core\Services\ImageCompressionService;
 use kintai\UI\ViewRenderer;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 
 final class StorePhotoControllerTest extends TestCase
 {
-    private StorePhotoRepositoryInterface&MockObject $photos;
-    private StoreRepositoryInterface&MockObject $stores;
-    private AppSettingsRepositoryInterface&MockObject $appSettings;
-    private StorePhotoController $controller;
+    private StorePhotoRepositoryInterface&Stub $photos;
+    private StoreRepositoryInterface&Stub $stores;
+    private AppSettingsRepositoryInterface&Stub $appSettings;
+    private ?StorePhotoController $controller = null;
 
     protected function setUp(): void
     {
@@ -34,21 +35,29 @@ final class StorePhotoControllerTest extends TestCase
         $this->ensureViewFile($viewDir, 'store-photos-detail');
         $this->ensureViewFile(sys_get_temp_dir(), 'layout.app');
 
-        $view = new ViewRenderer(sys_get_temp_dir());
-        $view->addNamespace('store-photos', $viewDir);
+        $this->photos = $this->createStub(StorePhotoRepositoryInterface::class);
+        $this->stores = $this->createStub(StoreRepositoryInterface::class);
+        $this->appSettings = $this->createStub(AppSettingsRepositoryInterface::class);
+    }
 
-        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
-        $this->stores = $this->createMock(StoreRepositoryInterface::class);
-        $this->appSettings = $this->createMock(AppSettingsRepositoryInterface::class);
+    /** Objet testé, construit à la première utilisation : un test peut d'abord remplacer un bouchon par un mock. */
+    private function controller(): StorePhotoController
+    {
+        if ($this->controller === null) {
+            $viewDir = sys_get_temp_dir() . '/kintai-store-photos-views';
+            $view = new ViewRenderer(sys_get_temp_dir());
+            $view->addNamespace('store-photos', $viewDir);
+            $this->controller = new StorePhotoController(
+                $view,
+                $this->photos,
+                $this->stores,
+                $this->appSettings,
+                new AuditLogger(),
+                new ImageCompressionService(),
+            );
+        }
 
-        $this->controller = new StorePhotoController(
-            $view,
-            $this->photos,
-            $this->stores,
-            $this->appSettings,
-            new AuditLogger(),
-            new ImageCompressionService(),
-        );
+        return $this->controller;
     }
 
     protected function tearDown(): void
@@ -74,7 +83,7 @@ final class StorePhotoControllerTest extends TestCase
         $req = new Request();
         $req->setAttribute('managed_store_ids', null);
 
-        $response = $this->controller->index($req);
+        $response = $this->controller()->index($req);
 
         $this->assertSame(200, $response->status());
     }
@@ -86,6 +95,7 @@ final class StorePhotoControllerTest extends TestCase
      */
     public function testIndexScopesSubmissionsToManagedStoresOnly(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
         $this->stores->method('findAll')->willReturn([
             ['id' => 1, 'name' => 'Store A'],
             ['id' => 2, 'name' => 'Store B'],
@@ -98,7 +108,7 @@ final class StorePhotoControllerTest extends TestCase
         $req = new Request();
         $req->setAttribute('managed_store_ids', [1]);
 
-        $response = $this->controller->index($req);
+        $response = $this->controller()->index($req);
 
         $this->assertSame(200, $response->status());
     }
@@ -106,8 +116,9 @@ final class StorePhotoControllerTest extends TestCase
     /** Un ?store_id= hors du périmètre géré est ignoré plutôt que d'être appliqué tel quel. */
     public function testIndexIgnoresStoreIdFilterOutsideManagedScope(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
         $this->stores->method('findAll')->willReturn([['id' => 1, 'name' => 'Store A']]);
-        $this->photos->method('findAllSubmissions')->with([1], 100)->willReturn([
+        $this->photos->expects($this->atLeastOnce())->method('findAllSubmissions')->with([1], 100)->willReturn([
             ['id' => 10, 'store_id' => 1],
         ]);
         $this->photos->method('findImagesBySubmission')->willReturn([]);
@@ -116,7 +127,7 @@ final class StorePhotoControllerTest extends TestCase
         $req = new Request();
         $req->setAttribute('managed_store_ids', [1]);
 
-        $response = $this->controller->index($req);
+        $response = $this->controller()->index($req);
 
         $this->assertSame(200, $response->status());
     }
@@ -217,27 +228,30 @@ final class StorePhotoControllerTest extends TestCase
      */
     public function testShowForbiddenForSubmissionOutsideManagedScope(): void
     {
-        $this->photos->method('findSubmissionById')->with(10)->willReturn(['id' => 10, 'store_id' => 2]);
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
+        $this->photos->expects($this->atLeastOnce())->method('findSubmissionById')->with(10)->willReturn(['id' => 10, 'store_id' => 2]);
 
         $req = new Request();
         $req->setRouteParams(['id' => '10']);
         $req->setAttribute('managed_store_ids', [1]);
 
         $this->expectException(ForbiddenException::class);
-        $this->controller->show($req);
+        $this->controller()->show($req);
     }
 
     public function testShowSucceedsForSubmissionWithinManagedScope(): void
     {
-        $this->photos->method('findSubmissionById')->with(10)->willReturn(['id' => 10, 'store_id' => 1]);
-        $this->photos->method('findImagesBySubmission')->with(10)->willReturn([]);
-        $this->stores->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
+        $this->stores = $this->createMock(StoreRepositoryInterface::class);
+        $this->photos->expects($this->atLeastOnce())->method('findSubmissionById')->with(10)->willReturn(['id' => 10, 'store_id' => 1]);
+        $this->photos->expects($this->atLeastOnce())->method('findImagesBySubmission')->with(10)->willReturn([]);
+        $this->stores->expects($this->atLeastOnce())->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
 
         $req = new Request();
         $req->setRouteParams(['id' => '10']);
         $req->setAttribute('managed_store_ids', [1]);
 
-        $response = $this->controller->show($req);
+        $response = $this->controller()->show($req);
 
         $this->assertSame(200, $response->status());
     }
@@ -249,20 +263,22 @@ final class StorePhotoControllerTest extends TestCase
      */
     public function testShowPassesOriginStoreIdAsBackStoreId(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
+        $this->stores = $this->createMock(StoreRepositoryInterface::class);
         $viewDir = sys_get_temp_dir() . '/kintai-store-photos-views';
         file_put_contents($viewDir . DIRECTORY_SEPARATOR . 'store-photos-detail.php', '<?php echo $backStoreId;');
         file_put_contents(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'layout' . DIRECTORY_SEPARATOR . 'app.php', '<?php echo $content;');
 
         $_GET = ['origin_store_id' => '0'];
-        $this->photos->method('findSubmissionById')->with(10)->willReturn(['id' => 10, 'store_id' => 1]);
-        $this->photos->method('findImagesBySubmission')->with(10)->willReturn([]);
-        $this->stores->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
+        $this->photos->expects($this->atLeastOnce())->method('findSubmissionById')->with(10)->willReturn(['id' => 10, 'store_id' => 1]);
+        $this->photos->expects($this->atLeastOnce())->method('findImagesBySubmission')->with(10)->willReturn([]);
+        $this->stores->expects($this->atLeastOnce())->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
 
         $req = new Request();
         $req->setRouteParams(['id' => '10']);
         $req->setAttribute('managed_store_ids', [1]);
 
-        $response = $this->controller->show($req);
+        $response = $this->controller()->show($req);
 
         $this->assertSame('0', $response->body());
     }
@@ -270,47 +286,51 @@ final class StorePhotoControllerTest extends TestCase
     /** Sans ?origin_store_id= (lien direct/ancien), show() retombe sur le store de l'envoi lui-même. */
     public function testShowFallsBackToSubmissionsStoreWithoutOrigin(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
+        $this->stores = $this->createMock(StoreRepositoryInterface::class);
         $viewDir = sys_get_temp_dir() . '/kintai-store-photos-views';
         file_put_contents($viewDir . DIRECTORY_SEPARATOR . 'store-photos-detail.php', '<?php echo $backStoreId;');
         file_put_contents(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'layout' . DIRECTORY_SEPARATOR . 'app.php', '<?php echo $content;');
 
-        $this->photos->method('findSubmissionById')->with(10)->willReturn(['id' => 10, 'store_id' => 1]);
-        $this->photos->method('findImagesBySubmission')->with(10)->willReturn([]);
-        $this->stores->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
+        $this->photos->expects($this->atLeastOnce())->method('findSubmissionById')->with(10)->willReturn(['id' => 10, 'store_id' => 1]);
+        $this->photos->expects($this->atLeastOnce())->method('findImagesBySubmission')->with(10)->willReturn([]);
+        $this->stores->expects($this->atLeastOnce())->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
 
         $req = new Request();
         $req->setRouteParams(['id' => '10']);
         $req->setAttribute('managed_store_ids', [1]);
 
-        $response = $this->controller->show($req);
+        $response = $this->controller()->show($req);
 
         $this->assertSame('1', $response->body());
     }
 
     public function testStoreForbiddenWhenPhotosDisabledForStore(): void
     {
+        $this->stores = $this->createMock(StoreRepositoryInterface::class);
         $_POST = ['store_id' => '1'];
         $req = new Request();
         $req->setAttribute('managed_store_ids', null);
 
         // Une ligne existe en base mais 'photos' n'y figure pas => désactivé pour ce store.
-        $this->stores->method('getFeatures')->with(1)->willReturn(['shifts', 'timeclock']);
+        $this->stores->expects($this->atLeastOnce())->method('getFeatures')->with(1)->willReturn(['shifts', 'timeclock']);
 
         $this->expectException(ForbiddenException::class);
-        $this->controller->store($req);
+        $this->controller()->store($req);
     }
 
     public function testCreateForbiddenWhenPhotosDisabledForRequestedStore(): void
     {
+        $this->stores = $this->createMock(StoreRepositoryInterface::class);
         $_GET['store_id'] = '1';
         $req = new Request();
         $req->setAttribute('managed_store_ids', null);
 
         $this->stores->method('findAll')->willReturn([]);
-        $this->stores->method('getFeatures')->with(1)->willReturn(['shifts']);
+        $this->stores->expects($this->atLeastOnce())->method('getFeatures')->with(1)->willReturn(['shifts']);
 
         $this->expectException(ForbiddenException::class);
-        $this->controller->create($req);
+        $this->controller()->create($req);
     }
 
     public function testCreateDropdownOnlyListsStoresWithPhotosFeatureEnabled(): void
@@ -333,7 +353,7 @@ final class StorePhotoControllerTest extends TestCase
             [2, ['shifts']],
         ]);
 
-        $response = $this->controller->create($req);
+        $response = $this->controller()->create($req);
 
         $listed = json_decode($response->body(), true);
         $this->assertSame([1], array_column($listed, 'id'));
@@ -344,7 +364,7 @@ final class StorePhotoControllerTest extends TestCase
         $req = new Request();
         $req->setAttribute('managed_store_ids', null);
 
-        $response = $this->controller->store($req);
+        $response = $this->controller()->store($req);
 
         $this->assertSame(302, $response->status());
     }
@@ -359,7 +379,7 @@ final class StorePhotoControllerTest extends TestCase
         $this->appSettings->method('get')->willReturn('14');
         $this->photos->method('saveSubmission')->willReturn(['id' => 55, 'store_id' => 1]);
 
-        $response = $this->controller->store($req);
+        $response = $this->controller()->store($req);
 
         $this->assertSame(302, $response->status());
     }
@@ -371,12 +391,13 @@ final class StorePhotoControllerTest extends TestCase
      */
     public function testStoreMergesIntoExistingSameDaySubmissionInsteadOfCreatingNew(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
         $_POST = ['store_id' => '1', 'notes' => 'Deuxième envoi'];
         $req = new Request();
         $req->setAttribute('managed_store_ids', null);
         $req->setAttribute('auth_user', ['id' => 7]);
 
-        $this->photos->method('findTodaySubmission')->with(1, date('Y-m-d'))
+        $this->photos->expects($this->atLeastOnce())->method('findTodaySubmission')->with(1, date('Y-m-d'))
             ->willReturn(['id' => 55, 'store_id' => 1, 'notes' => 'Premier envoi', 'image_count' => 2]);
 
         $this->photos->expects($this->once())->method('saveSubmission')
@@ -387,7 +408,7 @@ final class StorePhotoControllerTest extends TestCase
             }))
             ->willReturn(['id' => 55, 'store_id' => 1, 'image_count' => 2]);
 
-        $response = $this->controller->store($req);
+        $response = $this->controller()->store($req);
 
         $this->assertSame(302, $response->status());
     }
@@ -395,6 +416,7 @@ final class StorePhotoControllerTest extends TestCase
     /** Sans envoi existant pour aujourd'hui, store() crée bien une nouvelle soumission (image_count à 0). */
     public function testStoreCreatesNewSubmissionWhenNoneExistsForToday(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
         $_POST = ['store_id' => '1', 'week_label' => '2026-07-07', 'notes' => 'RAS'];
         $req = new Request();
         $req->setAttribute('managed_store_ids', null);
@@ -406,7 +428,7 @@ final class StorePhotoControllerTest extends TestCase
             ->with($this->callback(fn (array $data) => ($data['store_id'] ?? null) === 1 && ($data['image_count'] ?? null) === 0))
             ->willReturn(['id' => 99, 'store_id' => 1, 'image_count' => 0]);
 
-        $response = $this->controller->store($req);
+        $response = $this->controller()->store($req);
 
         $this->assertSame(302, $response->status());
     }
@@ -418,7 +440,7 @@ final class StorePhotoControllerTest extends TestCase
         $req->setAttribute('managed_store_ids', [1, 2]);
 
         $this->expectException(ForbiddenException::class);
-        $this->controller->store($req);
+        $this->controller()->store($req);
     }
 
     public function testDeleteForbiddenForNonAdmin(): void
@@ -428,19 +450,20 @@ final class StorePhotoControllerTest extends TestCase
         $req->setRouteParams(['id' => '1']);
 
         $this->expectException(ForbiddenException::class);
-        $this->controller->delete($req);
+        $this->controller()->delete($req);
     }
 
     public function testDeleteRemovesSubmissionForAdmin(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
         $req = new Request();
         $req->setAttribute('auth_user', ['id' => 1, 'is_admin' => true]);
         $req->setRouteParams(['id' => '42']);
 
-        $this->photos->method('findSubmissionById')->with(42)->willReturn(['id' => 42, 'store_id' => 3]);
+        $this->photos->expects($this->atLeastOnce())->method('findSubmissionById')->with(42)->willReturn(['id' => 42, 'store_id' => 3]);
         $this->photos->expects($this->once())->method('deleteSubmission')->with(42);
 
-        $response = $this->controller->delete($req);
+        $response = $this->controller()->delete($req);
 
         $this->assertSame(302, $response->status());
     }
@@ -451,14 +474,15 @@ final class StorePhotoControllerTest extends TestCase
      */
     public function testDeleteWithoutOriginRedirectsToTheSubmissionsOwnStore(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
         $_SERVER['SCRIPT_NAME'] = '/index.php';
         $req = new Request();
         $req->setAttribute('auth_user', ['id' => 1, 'is_admin' => true]);
         $req->setRouteParams(['id' => '42']);
 
-        $this->photos->method('findSubmissionById')->with(42)->willReturn(['id' => 42, 'store_id' => 3]);
+        $this->photos->expects($this->atLeastOnce())->method('findSubmissionById')->with(42)->willReturn(['id' => 42, 'store_id' => 3]);
 
-        $response = $this->controller->delete($req);
+        $response = $this->controller()->delete($req);
 
         $this->assertSame(302, $response->status());
         $this->assertRedirectLocation($response, '/admin/photos?store_id=3');
@@ -471,15 +495,16 @@ final class StorePhotoControllerTest extends TestCase
      */
     public function testDeleteFromAllStoresViewReturnsToAllStores(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
         $_SERVER['SCRIPT_NAME'] = '/index.php';
         $_GET = ['origin_store_id' => '0'];
         $req = new Request();
         $req->setAttribute('auth_user', ['id' => 1, 'is_admin' => true]);
         $req->setRouteParams(['id' => '42']);
 
-        $this->photos->method('findSubmissionById')->with(42)->willReturn(['id' => 42, 'store_id' => 3]);
+        $this->photos->expects($this->atLeastOnce())->method('findSubmissionById')->with(42)->willReturn(['id' => 42, 'store_id' => 3]);
 
-        $response = $this->controller->delete($req);
+        $response = $this->controller()->delete($req);
 
         $this->assertSame(302, $response->status());
         $this->assertRedirectLocation($response, '/admin/photos');
@@ -488,15 +513,16 @@ final class StorePhotoControllerTest extends TestCase
     /** Supprimé depuis une vue filtrée sur un AUTRE store que celui de l'envoi : on y revient, pas sur le store de l'envoi. */
     public function testDeleteFromDifferentFilteredStoreReturnsToThatStore(): void
     {
+        $this->photos = $this->createMock(StorePhotoRepositoryInterface::class);
         $_SERVER['SCRIPT_NAME'] = '/index.php';
         $_GET = ['origin_store_id' => '9'];
         $req = new Request();
         $req->setAttribute('auth_user', ['id' => 1, 'is_admin' => true]);
         $req->setRouteParams(['id' => '42']);
 
-        $this->photos->method('findSubmissionById')->with(42)->willReturn(['id' => 42, 'store_id' => 3]);
+        $this->photos->expects($this->atLeastOnce())->method('findSubmissionById')->with(42)->willReturn(['id' => 42, 'store_id' => 3]);
 
-        $response = $this->controller->delete($req);
+        $response = $this->controller()->delete($req);
 
         $this->assertSame(302, $response->status());
         $this->assertRedirectLocation($response, '/admin/photos?store_id=9');
@@ -508,7 +534,7 @@ final class StorePhotoControllerTest extends TestCase
         $req->setAttribute('auth_user', ['id' => 3, 'is_admin' => false]);
 
         $this->expectException(ForbiddenException::class);
-        $this->controller->settings($req);
+        $this->controller()->settings($req);
     }
 
     public function testSettingsRendersForAdmin(): void
@@ -518,13 +544,14 @@ final class StorePhotoControllerTest extends TestCase
 
         $this->appSettings->method('get')->willReturn('14');
 
-        $response = $this->controller->settings($req);
+        $response = $this->controller()->settings($req);
 
         $this->assertSame(200, $response->status());
     }
 
     public function testSaveSettingsPersistsRetentionAndCleanupDelay(): void
     {
+        $this->appSettings = $this->createMock(AppSettingsRepositoryInterface::class);
         $_POST = ['photo_retention_days' => '30', 'photo_cleanup_delay' => '10'];
         $req = new Request();
         $req->setAttribute('auth_user', ['id' => 1, 'is_admin' => true]);
@@ -534,7 +561,7 @@ final class StorePhotoControllerTest extends TestCase
             'photo_cleanup_delay'  => '10',
         ]);
 
-        $response = $this->controller->saveSettings($req);
+        $response = $this->controller()->saveSettings($req);
 
         $this->assertSame(302, $response->status());
     }
