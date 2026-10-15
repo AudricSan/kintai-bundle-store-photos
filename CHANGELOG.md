@@ -8,6 +8,10 @@ Le schéma de version (X.Y.Z, canaux alpha/beta/main) est décrit dans
 
 ## [Unreleased]
 
+### Fixed
+
+- Description de `bundle.json` alignée sur celle de `lang/fr.json`, pour que le catalogue et la page Bundles affichent le même texte.
+
 ### Changed
 
 - Extraction du Core (étape 4 du plan du contrat) : le bundle possède désormais tout son code et ses données. Les modèles `StorePhotoSubmission` / `StorePhotoImage` et le dépôt `StorePhotoRepositoryInterface` / `DatabaseStorePhotoRepository` (`src/Models`, `src/Repositories`) quittent le Core ; les tables `store_photo_submissions` / `store_photo_images` gardent leur nom et leurs données, et une migration du bundle les crée si elles manquent (installation neuve). La rétention des photos, jusqu'ici un script CLI du Core (`scripts/photo-retention.php`), devient la tâche planifiée `photo-retention` du bundle (`cronJobs()`, à lancer via `/cron/run/photo-retention` avec un jeton cron) : archivage des envois plus vieux que la durée de conservation, puis suppression définitive après le délai de nettoyage ; le dossier vide du magasin est maintenant supprimé lui aussi. L'avertissement « photos archivées », un e-mail qui ne partait plus depuis la suppression de `users.is_admin`, devient une notification aux Owners (type `photo_archived`, une fois par envoi). Les libellés de l'entrée de menu, de la fonctionnalité, de la catégorie de permissions et deux messages d'erreur passent dans `lang/`. `ContractUsageTest` n'admet plus aucune classe du Core hors contrat ; `ContractDeclarationsTest` vérifie chaque déclaration valeur par valeur. Nouveaux tests `PhotoRetentionServiceTest`, `StorePhotosMigrationTest` et `StorePhotoTodaySubmissionTest` (repris du Core avec le dépôt).

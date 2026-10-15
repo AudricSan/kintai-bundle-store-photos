@@ -2,7 +2,7 @@
     "slug": "store-photos",
     "name": "Photos de magasin",
     "version": "1.2.0",
-    "description": "Envoi et consultation de photos par magasin (état des lieux, rapport visuel), avec rotation et nettoyage automatique.",
+    "description": "Envoi et suivi de photos hebdomadaires de l'espace de vente.",
     "author": {
         "name": "AudricSan",
         "url": "https://github.com/AudricSan"
