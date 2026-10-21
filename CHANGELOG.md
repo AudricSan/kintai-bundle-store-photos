@@ -8,6 +8,10 @@ Le schéma de version (X.Y.Z, canaux alpha/beta/main) est décrit dans
 
 ## [Unreleased]
 
+### Added
+
+- Contrat de bundle 1.24 : `ContractUsageTest` vérifie aussi que le bundle n'appelle que des fonctions globales déclarées par le contrat (`ContractUsageScanner::functionViolations()`).
+
 ### Fixed
 
 - Description de `bundle.json` alignée sur celle de `lang/fr.json`, pour que le catalogue et la page Bundles affichent le même texte.
