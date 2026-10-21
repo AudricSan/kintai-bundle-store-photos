@@ -8,6 +8,10 @@ Le schéma de version (X.Y.Z, canaux alpha/beta/main) est décrit dans
 
 ## [Unreleased]
 
+### Changed
+
+- Notifications (contrat 1.23, `kintai_contract` `^1.23`) : type `photo_archived` déclaré au format enrichi (catégorie « reports », push par défaut, `reference_type` `photo_submission`) ; le lien ouvre l'envoi archivé (`/admin/photos/{store}/{id}`) au lieu de la liste, et l'ouvrir marque la notification comme lue.
+
 ### Fixed
 
 - Description de `bundle.json` alignée sur celle de `lang/fr.json`, pour que le catalogue et la page Bundles affichent le même texte.

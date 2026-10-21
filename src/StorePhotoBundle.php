@@ -82,10 +82,13 @@ final class StorePhotoBundle extends Bundle
     }
 
     /**
-     * Type de notification (contrat 1.7) : envoi de photos archivé, prévenu aux Owners avant suppression définitive.
+     * Type de notification : envoi de photos archivé, prévenu aux Owners avant suppression définitive. Format enrichi
+     * (contrat 1.23) : catégorie « reports », push par défaut, pas d'e-mail ; l'identifiant passé à notify() est celui de l'envoi.
      */
     public function notificationTypes(): array
     {
-        return ['photo_archived' => '📦'];
+        return [
+            'photo_archived' => ['icon' => '📦', 'category' => 'reports', 'channels' => ['push' => true, 'email' => false], 'reference_type' => 'photo_submission'],
+        ];
     }
 }
