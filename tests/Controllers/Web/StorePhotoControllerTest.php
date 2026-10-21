@@ -14,6 +14,7 @@ use kintai\Core\Request;
 use kintai\Core\Response;
 use kintai\Core\Services\AuditLogger;
 use kintai\Core\Services\ImageCompressionService;
+use kintai\Core\Services\NotificationService;
 use kintai\UI\ViewRenderer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -24,6 +25,7 @@ final class StorePhotoControllerTest extends TestCase
     private StorePhotoRepositoryInterface&Stub $photos;
     private StoreRepositoryInterface&Stub $stores;
     private AppSettingsRepositoryInterface&Stub $appSettings;
+    private NotificationService $notifs;
     private ?StorePhotoController $controller = null;
 
     protected function setUp(): void
@@ -38,6 +40,7 @@ final class StorePhotoControllerTest extends TestCase
         $this->photos = $this->createStub(StorePhotoRepositoryInterface::class);
         $this->stores = $this->createStub(StoreRepositoryInterface::class);
         $this->appSettings = $this->createStub(AppSettingsRepositoryInterface::class);
+        $this->notifs = $this->createStub(NotificationService::class);
     }
 
     /** Objet testé, construit à la première utilisation : un test peut d'abord remplacer un bouchon par un mock. */
@@ -54,6 +57,7 @@ final class StorePhotoControllerTest extends TestCase
                 $this->appSettings,
                 new AuditLogger(),
                 new ImageCompressionService(),
+                $this->notifs,
             );
         }
 
@@ -158,6 +162,7 @@ final class StorePhotoControllerTest extends TestCase
             $this->appSettings,
             new AuditLogger(),
             new ImageCompressionService(),
+            $this->notifs,
         );
 
         $this->stores->method('findAll')->willReturn([['id' => 1, 'name' => 'Store A']]);
@@ -199,6 +204,7 @@ final class StorePhotoControllerTest extends TestCase
             $this->appSettings,
             new AuditLogger(),
             new ImageCompressionService(),
+            $this->notifs,
         );
 
         $this->stores->method('findAll')->willReturn([['id' => 1, 'name' => 'Store A']]);
@@ -254,6 +260,39 @@ final class StorePhotoControllerTest extends TestCase
         $response = $this->controller()->show($req);
 
         $this->assertSame(200, $response->status());
+    }
+
+    /** Ouvrir l'envoi marque comme lue sa notification d'archivage, seulement pour un utilisateur connu. */
+    public function testShowMarksTheArchiveNotificationAsRead(): void
+    {
+        $this->photos = $this->createStub(StorePhotoRepositoryInterface::class);
+        $this->photos->method('findSubmissionById')->willReturn(['id' => 10, 'store_id' => 1]);
+        $this->photos->method('findImagesBySubmission')->willReturn([]);
+        $this->notifs = $this->createMock(NotificationService::class);
+        $this->notifs->expects($this->once())->method('markReadFor')->with(7, 'photo_submission', 10);
+
+        $req = new Request();
+        $req->setRouteParams(['id' => '10']);
+        $req->setAttribute('managed_store_ids', [1]);
+        $req->setAttribute('auth_user', ['id' => 7]);
+
+        $this->assertSame(200, $this->controller()->show($req)->status());
+    }
+
+    public function testShowForbiddenMarksNothing(): void
+    {
+        $this->photos = $this->createStub(StorePhotoRepositoryInterface::class);
+        $this->photos->method('findSubmissionById')->willReturn(['id' => 10, 'store_id' => 2]);
+        $this->notifs = $this->createMock(NotificationService::class);
+        $this->notifs->expects($this->never())->method('markReadFor');
+
+        $req = new Request();
+        $req->setRouteParams(['id' => '10']);
+        $req->setAttribute('managed_store_ids', [1]);
+        $req->setAttribute('auth_user', ['id' => 7]);
+
+        $this->expectException(ForbiddenException::class);
+        $this->controller()->show($req);
     }
 
     /**
