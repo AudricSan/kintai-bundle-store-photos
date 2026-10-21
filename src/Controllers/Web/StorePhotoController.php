@@ -13,6 +13,7 @@ use kintai\Contract\Data\AppSettingsRepositoryInterface;
 use kintai\Contract\Http\Request;
 use kintai\Contract\Http\Response;
 use kintai\Contract\Services\AuditLogger;
+use kintai\Contract\Services\NotificationService;
 use kintai\Contract\View\ViewRenderer;
 
 final class StorePhotoController
@@ -26,6 +27,7 @@ final class StorePhotoController
         private readonly AppSettingsRepositoryInterface $appSettings,
         private readonly AuditLogger $auditLogger,
         private readonly ImageCompressionService $imageCompressor,
+        private readonly NotificationService $notifs,
     ) {}
 
     public function index(Request $request): Response
@@ -376,6 +378,12 @@ final class StorePhotoController
             return Response::html($this->view->render('errors.404', ['title' => '404'], 'layout.app'), 404);
         }
         $this->assertStoreAccess($request, (int) $submission['store_id']);
+
+        // L'envoi est ouvert par quelqu'un qui y a accès : sa notification d'archivage est lue.
+        $userId = (int) ($request->getAttribute('auth_user')['id'] ?? 0);
+        if ($userId > 0) {
+            $this->notifs->markReadFor($userId, 'photo_submission', $id);
+        }
 
         $images = $this->enrichWithVersion($this->photos->findImagesBySubmission($id));
         $store  = $this->stores->findById((int) $submission['store_id']);

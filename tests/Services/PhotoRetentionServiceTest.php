@@ -78,7 +78,7 @@ final class PhotoRetentionServiceTest extends TestCase
         $notifications = $this->createMock(NotificationService::class);
         $notifications->expects($this->once())->method('notifyMany')->with(
             [1, 2], 'photo_archived', 'notif_photo_archived_body',
-            ['store' => 'Shibuya', 'date' => '2026-09-01', 'days' => '3'], 10, '/admin/photos'
+            ['store' => 'Shibuya', 'date' => '2026-09-01', 'days' => '3'], 10, '/admin/photos/5/10'
         );
 
         $result = (new PhotoRetentionService($photos, $settings, $stores, $permissions, $notifications, $this->dir))->run();

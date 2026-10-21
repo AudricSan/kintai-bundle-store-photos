@@ -57,7 +57,7 @@ final class PhotoRetentionService
                         'store' => $store['name'] ?? '#' . $storeId,
                         'date'  => (string) ($sub['week_label'] ?? '?'),
                         'days'  => (string) $cleanupDelay,
-                    ], $sid, '/admin/photos');
+                    ], $sid, '/admin/photos/' . $storeId . '/' . $sid);
                     $this->photos->saveSubmission(['id' => $sid, 'mail_sent_at' => $now, 'updated_at' => $now]);
                     $result['notified']++;
                 }

@@ -62,7 +62,15 @@ final class ContractDeclarationsTest extends TestCase
     public function testCronJobAndNotificationType(): void
     {
         $this->assertSame([PhotoRetentionJob::class], $this->bundle()->cronJobs());
-        $this->assertSame(['photo_archived' => '📦'], $this->bundle()->notificationTypes());
+        $declared = $this->bundle()->notificationTypes();
+        $this->assertSame(['photo_archived'], array_keys($declared));
+
+        // Déclaration valide pour le Core (format enrichi du contrat 1.23).
+        $type = \kintai\Contract\Extension\NotificationType::fromDeclaration('photo_archived', $declared['photo_archived']);
+        $this->assertSame('reports', $type->category);
+        $this->assertSame('photo_submission', $type->referenceType);
+        $this->assertTrue($type->push);
+        $this->assertFalse($type->email);
     }
 
     /** Le bundle n'apporte rien d'autre au Core. */
