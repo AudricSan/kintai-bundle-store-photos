@@ -52,7 +52,7 @@ final class StorePhotoBundle extends Bundle
     public function navigation(): array
     {
         return [
-            new NavItem('photos', NavItem::REPORTS, 'photos', 'admin.photos.index', 'admin.photos.index',
+            new NavItem('photos', NavItem::REPORTS, 'store_photos_photos', 'admin.photos.index', 'admin.photos.index',
                 icon: 'camera', activePaths: ['/admin/photos'], storeFeature: 'photos', order: 60),
         ];
     }
@@ -70,7 +70,7 @@ final class StorePhotoBundle extends Bundle
      */
     public function storeFeatures(): array
     {
-        return [new StoreFeature('photos', 'feature_photos', 'feature_photos_desc', '📷', 80)];
+        return [new StoreFeature('photos', 'store_photos_feature_photos', 'store_photos_feature_photos_desc', '📷', 80)];
     }
 
     /**

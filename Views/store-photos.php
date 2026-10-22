@@ -14,14 +14,14 @@ if ($storePhotosCss = bundle_asset('store-photos', 'css/photos.css')): ?>
 <?php endif;
 
 echo Flash::fromQuery('success', [
-    'created' => __('photo_created'),
-    'deleted' => __('photo_deleted'),
+    'created' => __('store_photos_photo_created'),
+    'deleted' => __('store_photos_photo_deleted'),
 ])->render();
 ?>
 <div class="page-header">
-    <h2 class="page-header__title"><?= __('photos_report') ?> <span class="page-count">(<?= count($submissions) ?>)</span></h2>
+    <h2 class="page-header__title"><?= __('store_photos_photos_report') ?> <span class="page-count">(<?= count($submissions) ?>)</span></h2>
     <div class="page-header__actions">
-        <a href="<?= $BASE_URL ?>/admin/photos/create" class="btn btn--primary">+ <?= __('photo_new_submission') ?></a>
+        <a href="<?= $BASE_URL ?>/admin/photos/create" class="btn btn--primary">+ <?= __('store_photos_photo_new_submission') ?></a>
     </div>
 </div>
 
@@ -40,9 +40,9 @@ echo Flash::fromQuery('success', [
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label"><?= __('photo_filter_day') ?></label>
+                <label class="form-label"><?= __('store_photos_photo_filter_day') ?></label>
                 <select name="date" class="form-control form-control-sm" data-submit-on-change>
-                    <option value=""><?= __('photo_filter_all_days') ?></option>
+                    <option value=""><?= __('store_photos_photo_filter_all_days') ?></option>
                     <?php foreach ($availableDates as $day => $dayCount): ?>
                         <option value="<?= htmlspecialchars($day) ?>" <?= $filterDate === $day ? 'selected' : '' ?>>
                             <?= date('d/m/Y', strtotime($day)) ?> (<?= $dayCount ?>)
@@ -59,7 +59,7 @@ echo Flash::fromQuery('success', [
 
 <?php if (empty($submissions)): ?>
     <div class="card">
-        <div class="empty-state"><?= __('photo_empty') ?></div>
+        <div class="empty-state"><?= __('store_photos_photo_empty') ?></div>
     </div>
 <?php else: ?>
     <?php $currentDay = null; ?>
@@ -78,7 +78,7 @@ echo Flash::fromQuery('success', [
             <?php $currentDay = $day; ?>
             <div class="photo-day-group__header">
                 <h3 class="photo-day-group__title"><?= date('d/m/Y', strtotime($day)) ?></h3>
-                <span class="badge badge--secondary badge--sm"><?= $availableDates[$day] ?? 0 ?> <?= __('photos_count') ?></span>
+                <span class="badge badge--secondary badge--sm"><?= $availableDates[$day] ?? 0 ?> <?= __('store_photos_photos_count') ?></span>
             </div>
             <div class="photo-grid">
         <?php endif; ?>
@@ -90,13 +90,13 @@ echo Flash::fromQuery('success', [
                              loading="lazy"
                              class="photo-card__preview-img">
                     <?php else: ?>
-                        <div class="empty-state photo-card__preview-empty"><?= __('photo_no_images') ?></div>
+                        <div class="empty-state photo-card__preview-empty"><?= __('store_photos_photo_no_images') ?></div>
                     <?php endif; ?>
                 </div>
                 <div class="card-body photo-card__body">
                     <div class="photo-card__meta">
                         <strong><?= htmlspecialchars($storeName) ?></strong>
-                        <span class="badge badge--secondary badge--sm"><?= $count ?> <?= __('photos_count') ?></span>
+                        <span class="badge badge--secondary badge--sm"><?= $count ?> <?= __('store_photos_photos_count') ?></span>
                     </div>
                     <div class="text-muted text-sm"><?= htmlspecialchars($sub['week_label'] ?? '') ?></div>
                     <?php if (!empty($sub['notes'])): ?>

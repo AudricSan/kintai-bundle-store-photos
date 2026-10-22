@@ -22,7 +22,7 @@ $backUrl   = back_url($BASE_URL . '/admin/photos' . ($backStoreId > 0 ? '?store_
         <a href="<?= $backUrl ?>" class="btn btn--ghost btn--sm">← <?= __('back') ?></a>
         <?php if ($isOwner): ?>
             <form method="POST" action="<?= $BASE_URL ?>/admin/photos/<?= (int) ($submission['store_id'] ?? 0) ?>/<?= $sid ?>/delete?origin_store_id=<?= $backStoreId ?>"
-                  class="form-inline" data-confirm="<?= htmlspecialchars(__('photo_confirm_delete'), ENT_QUOTES) ?>">
+                  class="form-inline" data-confirm="<?= htmlspecialchars(__('store_photos_photo_confirm_delete'), ENT_QUOTES) ?>">
                 <?= csrf_field() ?>
                 <button type="submit" class="btn btn--danger btn--sm"><?= __('delete') ?></button>
             </form>
@@ -33,7 +33,7 @@ $backUrl   = back_url($BASE_URL . '/admin/photos' . ($backStoreId > 0 ? '?store_
 <?php if (!empty($submission['notes'])): ?>
     <div class="card card--mb">
         <div class="card-body">
-            <strong><?= __('photo_notes') ?> :</strong>
+            <strong><?= __('store_photos_photo_notes') ?> :</strong>
             <p class="text-sm mt-xs"><?= nl2br(htmlspecialchars($submission['notes'])) ?></p>
         </div>
     </div>
@@ -41,7 +41,7 @@ $backUrl   = back_url($BASE_URL . '/admin/photos' . ($backStoreId > 0 ? '?store_
 
 <?php if (empty($images)): ?>
     <div class="card">
-        <div class="empty-state"><?= __('photo_no_images') ?></div>
+        <div class="empty-state"><?= __('store_photos_photo_no_images') ?></div>
     </div>
 <?php else: ?>
     <div class="photo-detail-grid">
@@ -63,12 +63,12 @@ $backUrl   = back_url($BASE_URL . '/admin/photos' . ($backStoreId > 0 ? '?store_
                             <form method="POST" action="<?= $BASE_URL ?>/admin/photos/image/<?= (int) $img['id'] ?>/rotate?origin_store_id=<?= $backStoreId ?>" class="form-inline">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="direction" value="left">
-                                <button type="submit" class="btn btn--ghost btn--xs" title="<?= htmlspecialchars(__('photo_rotate_left')) ?>">⟲</button>
+                                <button type="submit" class="btn btn--ghost btn--xs" title="<?= htmlspecialchars(__('store_photos_photo_rotate_left')) ?>">⟲</button>
                             </form>
                             <form method="POST" action="<?= $BASE_URL ?>/admin/photos/image/<?= (int) $img['id'] ?>/rotate?origin_store_id=<?= $backStoreId ?>" class="form-inline">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="direction" value="right">
-                                <button type="submit" class="btn btn--ghost btn--xs" title="<?= htmlspecialchars(__('photo_rotate_right')) ?>">⟳</button>
+                                <button type="submit" class="btn btn--ghost btn--xs" title="<?= htmlspecialchars(__('store_photos_photo_rotate_right')) ?>">⟳</button>
                             </form>
                         </div>
                     <?php endif; ?>

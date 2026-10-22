@@ -31,7 +31,7 @@ final class ContractDeclarationsTest extends TestCase
         $this->assertInstanceOf(NavItem::class, $items[0]);
         $this->assertSame('photos', $items[0]->key);
         $this->assertSame(NavItem::REPORTS, $items[0]->section);
-        $this->assertSame('photos', $items[0]->label);
+        $this->assertSame('store_photos_photos', $items[0]->label);
         $this->assertSame('admin.photos.index', $items[0]->managerRoute);
         $this->assertSame('admin.photos.index', $items[0]->employeeRoute);
         $this->assertSame('camera', $items[0]->icon);
@@ -53,8 +53,8 @@ final class ContractDeclarationsTest extends TestCase
         $this->assertCount(1, $features);
         $this->assertInstanceOf(StoreFeature::class, $features[0]);
         $this->assertSame('photos', $features[0]->key);
-        $this->assertSame('feature_photos', $features[0]->label);
-        $this->assertSame('feature_photos_desc', $features[0]->description);
+        $this->assertSame('store_photos_feature_photos', $features[0]->label);
+        $this->assertSame('store_photos_feature_photos_desc', $features[0]->description);
         $this->assertSame('📷', $features[0]->icon);
         $this->assertSame(80, $features[0]->order);
     }
@@ -90,8 +90,8 @@ final class ContractDeclarationsTest extends TestCase
     /** Les libellés des déclarations sont traduits par le bundle (le Core ne les fournit plus). */
     public function testDeclaredLabelsAreTranslatedByTheBundle(): void
     {
-        $keys = ['photos', 'perm_category_photos', 'feature_photos', 'feature_photos_desc', 'notif_photo_archived',
-            'notif_photo_archived_body', 'error_owner_only_delete_photos', 'error_photos_feature_disabled'];
+        $keys = ['store_photos_photos', 'perm_category_photos', 'store_photos_feature_photos', 'store_photos_feature_photos_desc', 'notif_photo_archived',
+            'notif_photo_archived_body', 'store_photos_error_owner_only_delete_photos', 'store_photos_error_photos_feature_disabled'];
         foreach (['fr', 'en', 'ja'] as $locale) {
             $lang = json_decode((string) file_get_contents(dirname(__DIR__) . "/lang/{$locale}.json"), true);
             foreach ($keys as $key) {

@@ -74,7 +74,7 @@ final class StorePhotoController
         }
 
         return Response::html($this->view->render('store-photos::store-photos', [
-            'title'             => __('photos_report'),
+            'title'             => __('store_photos_photos_report'),
             'submissions'       => $submissions,
             'submissionImages'  => $submissionImages,
             'storeNames'        => $storeNames,
@@ -103,7 +103,7 @@ final class StorePhotoController
         }
 
         return Response::html($this->view->render('store-photos::store-photos-form', [
-            'title'       => __('photo_new_submission'),
+            'title'       => __('store_photos_photo_new_submission'),
             'mode'        => 'create',
             'myStores'    => $myStores,
             'storeNames'  => $storeNames,
@@ -238,7 +238,7 @@ final class StorePhotoController
     private function assertPhotosFeatureEnabled(int $storeId): void
     {
         if (!$this->isPhotosFeatureEnabled($storeId)) {
-            throw new ForbiddenException(__('error_photos_feature_disabled'));
+            throw new ForbiddenException(__('store_photos_error_photos_feature_disabled'));
         }
     }
 
@@ -389,7 +389,7 @@ final class StorePhotoController
         $store  = $this->stores->findById((int) $submission['store_id']);
 
         return Response::html($this->view->render('store-photos::store-photos-detail', [
-            'title'        => __('photo_submission') . ' #' . $id,
+            'title'        => __('store_photos_photo_submission') . ' #' . $id,
             'submission'   => $submission,
             'images'       => $images,
             'store'        => $store,
@@ -402,7 +402,7 @@ final class StorePhotoController
     {
         $authUser = $request->getAttribute('auth_user');
         if (empty($authUser['is_admin'])) {
-            throw new ForbiddenException(__('error_owner_only_delete_photos'));
+            throw new ForbiddenException(__('store_photos_error_owner_only_delete_photos'));
         }
 
         $id = (int) $request->param('id');
@@ -442,7 +442,7 @@ final class StorePhotoController
         }
 
         return Response::html($this->view->render('store-photos::store-photos-settings', [
-            'title'               => __('photo_settings'),
+            'title'               => __('store_photos_photo_settings'),
             'retentionDays'       => $this->appSettings->get('photo_retention_days', '14'),
             'cleanupDelay'        => $this->appSettings->get('photo_cleanup_delay', '7'),
         ], 'layout.app'));
