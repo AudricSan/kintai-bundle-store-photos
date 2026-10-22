@@ -8,6 +8,9 @@ Le schéma de version (X.Y.Z, canaux alpha/beta/main) est décrit dans
 
 ## [Unreleased]
 
+### Added
+
+- Contrat de bundle 1.24 : `ContractUsageTest` vérifie aussi que le bundle n'appelle que des fonctions globales déclarées par le contrat (`ContractUsageScanner::functionViolations()`).
 ### Changed
 
 - Notifications (contrat 1.23, `kintai_contract` `^1.23`) : type `photo_archived` déclaré au format enrichi (catégorie « reports », push par défaut, `reference_type` `photo_submission`) ; le lien ouvre l'envoi archivé (`/admin/photos/{store}/{id}`) au lieu de la liste, et l'ouvrir marque la notification comme lue.
