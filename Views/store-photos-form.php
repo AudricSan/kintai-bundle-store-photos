@@ -6,15 +6,18 @@
 
 $thisWeek = date('Y-m-d', strtotime('tuesday this week'));
 ?>
+<?php if ($storePhotosCss = bundle_asset('store-photos', 'css/photos.css')): ?>
+<link rel="stylesheet" href="<?= $storePhotosCss ?>">
+<?php endif; ?>
 <div class="page-header">
-    <h2 class="page-header__title"><?= __('photo_new_submission') ?></h2>
+    <h2 class="page-header__title"><?= __('store_photos_photo_new_submission') ?></h2>
     <div class="page-header__actions">
         <a href="<?= back_url($BASE_URL . '/admin/photos') ?>" class="btn btn--ghost btn--sm">← <?= __('back') ?></a>
     </div>
 </div>
 
 <div class="card card--mb" id="uploadCard">
-    <div class="card-header"><?= __('photo_submission_info') ?></div>
+    <div class="card-header"><?= __('store_photos_photo_submission_info') ?></div>
     <div class="card-body form-stack">
         <div class="form-group">
             <label class="form-label"><?= __('store') ?></label>
@@ -28,36 +31,36 @@ $thisWeek = date('Y-m-d', strtotime('tuesday this week'));
             </select>
         </div>
         <div class="form-group">
-            <label class="form-label"><?= __('photo_week') ?></label>
+            <label class="form-label"><?= __('store_photos_photo_week') ?></label>
             <input type="date" name="week_label" class="form-control form-control-sm" id="f_week_label"
                    value="<?= htmlspecialchars($thisWeek) ?>">
         </div>
         <div class="form-group">
-            <label class="form-label"><?= __('photo_notes') ?></label>
-            <textarea name="notes" class="form-control" rows="3" id="f_notes" placeholder="<?= __('photo_notes_placeholder') ?>"></textarea>
+            <label class="form-label"><?= __('store_photos_photo_notes') ?></label>
+            <textarea name="notes" class="form-control" rows="3" id="f_notes" placeholder="<?= __('store_photos_photo_notes_placeholder') ?>"></textarea>
         </div>
         <div class="form-group">
-            <label class="form-label"><?= __('photo_upload') ?></label>
+            <label class="form-label"><?= __('store_photos_photo_upload') ?></label>
             <input type="file" name="photos[]" class="form-control" multiple
                    accept="image/jpeg,image/png,image/webp" id="photoInput">
             <div class="photo-preview" id="photoPreview"></div>
             <span class="text-xs text-muted" id="photoCount"></span>
-            <span class="form-error hidden" id="photoSizeError"><?= __('photo_max_size_error') ?></span>
+            <span class="form-error hidden" id="photoSizeError"><?= __('store_photos_photo_max_size_error') ?></span>
         </div>
     </div>
 </div>
 
 <div class="card card--mb hidden" id="progressCard">
-    <div class="card-header"><?= __('photo_upload_progress') ?></div>
+    <div class="card-header"><?= __('store_photos_photo_upload_progress') ?></div>
     <div class="card-body" id="progressList"></div>
 </div>
 
 <div class="form-actions">
-    <button type="button" class="btn btn--primary" id="uploadBtn" disabled><?= __('photo_submit') ?></button>
+    <button type="button" class="btn btn--primary" id="uploadBtn" disabled><?= __('store_photos_photo_submit') ?></button>
     <a href="<?= back_url($BASE_URL . '/admin/photos') ?>" class="btn btn--ghost"><?= __('cancel') ?></a>
 </div>
 
-<script>
+<script nonce="<?= function_exists('csp_nonce') ? csp_nonce() : '' ?>">
 var selectedFiles = [];
 var input = document.getElementById('photoInput');
 var preview = document.getElementById('photoPreview');
@@ -91,7 +94,7 @@ function renderPreview() {
         btn.type = 'button';
         btn.className = 'photo-preview-remove';
         btn.innerHTML = '&times;';
-        btn.title = '<?= __('photo_remove') ?>';
+        btn.title = '<?= __('store_photos_photo_remove') ?>';
         btn.onclick = (function(idx) { return function() {
             selectedFiles.splice(idx, 1);
             renderPreview();
@@ -104,7 +107,7 @@ function renderPreview() {
         div.appendChild(name);
         preview.appendChild(div);
     }
-    photoCount.textContent = selectedFiles.length ? selectedFiles.length + ' <?= __('photos_count') ?>' : '';
+    photoCount.textContent = selectedFiles.length ? selectedFiles.length + ' <?= __('store_photos_photos_count') ?>' : '';
     var maxBytes = 40 * 1024 * 1024;
     if (total > maxBytes) {
         sizeError.classList.remove('hidden');
@@ -123,7 +126,7 @@ uploadBtn.addEventListener('click', function() {
     if (selectedFiles.length === 0) return;
 
     uploadBtn.disabled = true;
-    uploadBtn.textContent = '<?= __('photo_uploading') ?>...';
+    uploadBtn.textContent = '<?= __('store_photos_photo_uploading') ?>...';
     uploadCard.style.display = 'none';
     progressCard.classList.remove('hidden');
     progressList.innerHTML = '';
@@ -148,20 +151,20 @@ uploadBtn.addEventListener('click', function() {
                 if (body && body.error) { msg = htmlEscape(body.error); }
             } catch (e) {}
             progressList.innerHTML = '<p class="text-danger">' + msg + '</p>';
-            uploadBtn.textContent = '<?= __('photo_submit') ?>';
+            uploadBtn.textContent = '<?= __('store_photos_photo_submit') ?>';
             return;
         }
         var submissionId;
         try { submissionId = JSON.parse(xhr.responseText).id; } catch(e) {
             progressList.innerHTML = '<p class="text-danger">R&eacute;ponse invalide.</p>';
-            uploadBtn.textContent = '<?= __('photo_submit') ?>';
+            uploadBtn.textContent = '<?= __('store_photos_photo_submit') ?>';
             return;
         }
         uploadNext(submissionId, files, 0, token);
     };
     xhr.onerror = function() {
         progressList.innerHTML = '<p class="text-danger">Erreur r&eacute;seau.</p>';
-        uploadBtn.textContent = '<?= __('photo_submit') ?>';
+        uploadBtn.textContent = '<?= __('store_photos_photo_submit') ?>';
     };
     xhr.send(fd);
 
@@ -169,7 +172,7 @@ uploadBtn.addEventListener('click', function() {
         if (idx >= files.length) {
             var p = document.createElement('p');
             p.className = 'text-success';
-            p.textContent = '<?= __('photo_upload_done') ?>';
+            p.textContent = '<?= __('store_photos_photo_upload_done') ?>';
             progressList.appendChild(p);
             setTimeout(function() { window.location.href = '<?= $BASE_URL ?>/admin/photos?store_id=' + storeId; }, 1500);
             return;
@@ -178,7 +181,7 @@ uploadBtn.addEventListener('click', function() {
         var row = document.createElement('div');
         row.className = 'photo-upload-row';
         row.innerHTML = '<span class="text-sm">' + htmlEscape(file.name) + '</span>' +
-            '<div class="progress-bar"><div class="progress-bar__fill" id="pbar_' + idx + '" style="width:0%"></div></div>' +
+            '<div class="progress-bar"><div class="progress-bar__fill" id="pbar_' + idx + '"></div></div>' +
             '<span class="text-xs" id="ptxt_' + idx + '">0%</span>';
         progressList.appendChild(row);
 

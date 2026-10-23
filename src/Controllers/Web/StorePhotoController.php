@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace kintai\Bundles\Installed\StorePhoto\Controllers\Web;
 
-use kintai\UI\Controller\Web\HasAdminAccess;
-use kintai\Core\Services\ImageCompressionService;
-use kintai\Core\Exceptions\ForbiddenException;
-use kintai\Core\Repositories\StorePhotoRepositoryInterface;
-use kintai\Core\Repositories\StoreRepositoryInterface;
-use kintai\Core\Repositories\AppSettingsRepositoryInterface;
-use kintai\Core\Request;
-use kintai\Core\Response;
-use kintai\Core\Services\AuditLogger;
-use kintai\UI\ViewRenderer;
+use kintai\Contract\Http\Concerns\HasAdminAccess;
+use kintai\Contract\Services\ImageCompressionService;
+use kintai\Contract\Exceptions\ForbiddenException;
+use kintai\Bundles\Installed\StorePhoto\Repositories\StorePhotoRepositoryInterface;
+use kintai\Contract\Data\StoreRepositoryInterface;
+use kintai\Contract\Data\AppSettingsRepositoryInterface;
+use kintai\Contract\Http\Request;
+use kintai\Contract\Http\Response;
+use kintai\Contract\Services\AuditLogger;
+use kintai\Contract\Services\NotificationService;
+use kintai\Contract\View\ViewRenderer;
 
 final class StorePhotoController
 {
@@ -26,6 +27,7 @@ final class StorePhotoController
         private readonly AppSettingsRepositoryInterface $appSettings,
         private readonly AuditLogger $auditLogger,
         private readonly ImageCompressionService $imageCompressor,
+        private readonly NotificationService $notifs,
     ) {}
 
     public function index(Request $request): Response
@@ -72,7 +74,7 @@ final class StorePhotoController
         }
 
         return Response::html($this->view->render('store-photos::store-photos', [
-            'title'             => __('photos_report'),
+            'title'             => __('store_photos_photos_report'),
             'submissions'       => $submissions,
             'submissionImages'  => $submissionImages,
             'storeNames'        => $storeNames,
@@ -101,7 +103,7 @@ final class StorePhotoController
         }
 
         return Response::html($this->view->render('store-photos::store-photos-form', [
-            'title'       => __('photo_new_submission'),
+            'title'       => __('store_photos_photo_new_submission'),
             'mode'        => 'create',
             'myStores'    => $myStores,
             'storeNames'  => $storeNames,
@@ -236,7 +238,7 @@ final class StorePhotoController
     private function assertPhotosFeatureEnabled(int $storeId): void
     {
         if (!$this->isPhotosFeatureEnabled($storeId)) {
-            throw new ForbiddenException(__('error_photos_feature_disabled'));
+            throw new ForbiddenException(__('store_photos_error_photos_feature_disabled'));
         }
     }
 
@@ -377,11 +379,17 @@ final class StorePhotoController
         }
         $this->assertStoreAccess($request, (int) $submission['store_id']);
 
+        // L'envoi est ouvert par quelqu'un qui y a accès : sa notification d'archivage est lue.
+        $userId = (int) ($request->getAttribute('auth_user')['id'] ?? 0);
+        if ($userId > 0) {
+            $this->notifs->markReadFor($userId, 'photo_submission', $id);
+        }
+
         $images = $this->enrichWithVersion($this->photos->findImagesBySubmission($id));
         $store  = $this->stores->findById((int) $submission['store_id']);
 
         return Response::html($this->view->render('store-photos::store-photos-detail', [
-            'title'        => __('photo_submission') . ' #' . $id,
+            'title'        => __('store_photos_photo_submission') . ' #' . $id,
             'submission'   => $submission,
             'images'       => $images,
             'store'        => $store,
@@ -394,7 +402,7 @@ final class StorePhotoController
     {
         $authUser = $request->getAttribute('auth_user');
         if (empty($authUser['is_admin'])) {
-            throw new ForbiddenException(__('error_owner_only_delete_photos'));
+            throw new ForbiddenException(__('store_photos_error_owner_only_delete_photos'));
         }
 
         $id = (int) $request->param('id');
@@ -434,7 +442,7 @@ final class StorePhotoController
         }
 
         return Response::html($this->view->render('store-photos::store-photos-settings', [
-            'title'               => __('photo_settings'),
+            'title'               => __('store_photos_photo_settings'),
             'retentionDays'       => $this->appSettings->get('photo_retention_days', '14'),
             'cleanupDelay'        => $this->appSettings->get('photo_cleanup_delay', '7'),
         ], 'layout.app'));

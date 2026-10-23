@@ -1,5 +1,5 @@
 <?php
-use kintai\UI\Components\Flash;
+use kintai\Contract\View\Components\Flash;
 
 /** @var string $retentionDays */
 /** @var string $cleanupDelay */
@@ -8,7 +8,7 @@ use kintai\UI\Components\Flash;
 echo Flash::fromQuery('success', ['saved' => __('save_success')])->render();
 ?>
 <div class="page-header">
-    <h2 class="page-header__title"><?= __('photo_settings') ?></h2>
+    <h2 class="page-header__title"><?= __('store_photos_photo_settings') ?></h2>
     <div class="page-header__actions">
         <a href="<?= back_url($BASE_URL . '/admin/photos') ?>" class="btn btn--ghost btn--sm">← <?= __('back') ?></a>
     </div>
@@ -18,22 +18,22 @@ echo Flash::fromQuery('success', ['saved' => __('save_success')])->render();
 <?= csrf_field() ?>
 
     <div class="card card--mb">
-        <div class="card-header"><?= __('photo_retention_title') ?></div>
+        <div class="card-header"><?= __('store_photos_photo_retention_title') ?></div>
         <div class="card-body form-stack">
             <div class="form-group">
-                <label class="form-label"><?= __('photo_retention_days') ?></label>
+                <label class="form-label"><?= __('store_photos_photo_retention_days') ?></label>
                 <input type="number" name="photo_retention_days" class="form-control form-control-sm"
                        value="<?= (int) $retentionDays ?>" min="1" max="365" required>
-                <span class="form-hint"><?= __('photo_retention_days_hint') ?></span>
+                <span class="form-hint"><?= __('store_photos_photo_retention_days_hint') ?></span>
             </div>
             <div class="form-group">
-                <label class="form-label"><?= __('photo_cleanup_delay') ?></label>
+                <label class="form-label"><?= __('store_photos_photo_cleanup_delay') ?></label>
                 <input type="number" name="photo_cleanup_delay" class="form-control form-control-sm"
                        value="<?= (int) $cleanupDelay ?>" min="1" max="365" required>
-                <span class="form-hint"><?= __('photo_cleanup_delay_hint') ?></span>
+                <span class="form-hint"><?= __('store_photos_photo_cleanup_delay_hint') ?></span>
             </div>
             <div class="form-group">
-                <p class="text-sm text-muted"><?= __('photo_retention_explain') ?></p>
+                <p class="text-sm text-muted"><?= __('store_photos_photo_retention_explain') ?></p>
             </div>
         </div>
     </div>
